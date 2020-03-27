@@ -9,8 +9,8 @@
 		</Console>
 
 		<RollingFile name="RollingFile"
-			fileName="${env:CATALINA_HOME}/logs/api-bnft-nwband-bpc/api-bnft-nwband-bpc.log"
-			filePattern="${env:CATALINA_HOME}/logs/api-bnft-nwband-bpc/api-bnft-nwband-bpc-%d{MM-dd-yyyy}-%i.log">
+			fileName="${env:CATALINA_HOME}/logs/api-bnft-batch-engine/api-bnft-batch-engine.log"
+			filePattern="${env:CATALINA_HOME}/logs/api-bnft-batch-engine/api-bnft-batch-engine-%d{MM-dd-yyyy}-%i.log">
 			
 			<PatternLayout
 				pattern="%X{sessionId}_%X{requestId} %d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n" />
@@ -24,7 +24,7 @@
 	</Appenders>
 
 	<Loggers>
-		<Logger name="com.trinet.bnftnwbandbatchprocessor" level="Info" additivity="false">
+		<Logger name="com.trinet.benefits.oe" level="Info" additivity="false">
 			<AppenderRef ref="Console" />
 		</Logger>
 		<Logger name="org.springframework" level="Info" additivity="false">
