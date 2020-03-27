@@ -1,0 +1,753 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+
+<properties>
+	<entry key="insertNewOptns">
+      <![CDATA[ select distinct
+		optn.T2_plan_dt_start  , optn.T2_OE_QUARTER,
+optn.company,
+optn.pf_client
+from ps_t2_clientoption optn, ps_t2_client_optn2 optn2
+where optn.t2_client_type = 'PEO'
+and   optn.T2_COMP_TERM_DT is NULL
+and   optn.pf_client = optn2.pf_client
+and   optn.company   = optn2.company
+and   optn2.effdt =
+        (SELECT MAX(optn2_ED.EFFDT) FROM PS_T2_CLIENT_OPTN2 optn2_ED
+        WHERE optn2.COMPANY = optn2_ED.COMPANY
+          AND optn2.PF_CLIENT = optn2_ED.PF_CLIENT
+          AND optn2_ED.EFFDT <= :effdt)
+and   optn2.t2_funding_optn <> 'CSS'
+and   optn2.eff_status = 'A'
+and   optn.PF_CLIENT = :pfClient
+     	]]>
+	</entry>
+
+	<entry key="checkOptn2">
+      <![CDATA[
+      select DISTINCT pf_client from PS_T2_CLIENT_OPTN2 where pf_client = :pfClient and effdt = :effdt
+      ]]>
+	</entry>
+
+	<entry key="getOptn2">
+      <![CDATA[
+		select DBMS_RANDOM.random as id, benefit_program , effdt as effdtFromOptn2, optn2.T2_BAND_CD, optn2.T2_BCBS_BAND_CD, 
+optn2.T2_LIFE_BAND_CD,
+optn2.T2_DIS_BAND_CD,
+optn2.T2_BCBSNC_BAND_CD,          
+optn2.T2_KAISCA_BAND_CD,
+optn2.T2_KAISCO_BAND_CD,
+optn2.T2_BSOFCA_BAND_CD,
+optn2.T2_AETNA_BAND_CD,
+optn2.T2_TUFTS_BAND_CD,
+optn2.T2_UHC_BAND_CD ,        
+optn2.T2_BCOFID_BAND_CD,
+optn2.T2_BCBSMN_BAND_CD,
+optn2.T2_KAIMIDA_BAND_CD,
+optn2.T2_KAISHI_BAND_CD,
+optn2.T2_EMP_NY_BAND_CD,
+optn2.T2_AET_HMO_BAND_CD,
+optn2.T2_AET_PPO_BAND_CD from ps_t2_client_optn2 optn2 where optn2.company   = :company and  optn2.pf_client = :pfClient
+and   optn2.eff_status = 'A'         
+and   optn2.t2_funding_optn <> ' '
+and   optn2.effdt     = (Select max(effdt) from ps_t2_client_optn2
+                         where company   = optn2.company
+                         and   pf_client = optn2.pf_client)
+     	]]>
+	</entry>
+
+	<entry key="insertClOptnEfdt">
+      <![CDATA[
+      insert into PS_T2_CL_OPTN_EFDT(
+ COMPANY
+,PF_CLIENT
+,EFFDT
+,T2_HAS_125_PLAN)
+select COMPANY
+,PF_CLIENT
+,:effdt
+,T2_HAS_125_PLAN
+from ps_t2_cl_optn_efdt coe
+where coe.company   = :company
+and   coe.pf_client = :pfClient
+and   coe.effdt     = :effdtFromOptn2
+      ]]>
+	</entry>
+
+	<entry key="insertOptn2">
+      <![CDATA[
+		insert into PS_T2_CLIENT_OPTN2 optn2
+(COMPANY
+,PF_CLIENT
+,EFFDT
+,BENEFIT_PROGRAM
+,eff_status
+,t2_funding_optn
+,t2_ee_pct
+,t2_dep_pct
+,T2_EE_PCT_D
+,T2_DEP_PCT_D
+,T2_EE_PCT_V
+,T2_DEP_PCT_V
+,t2_rate_update
+,T2_BAND_CHG
+,t2_funding_chg
+,T2_BENSUPP_EE
+,T2_BENSUPP_SP
+,T2_BENSUPP_DEP
+,T2_BENSUPP_FAM
+,T2_BENSUPP_ALL
+,T2_BENSUPP_NB
+,T2_LIFE_PLAN
+,T2_LTD_PLAN
+,T2_STD_PLAN
+,T2_FORFEIT_EXC_CR
+,T2_SPONS_MDV
+,T2_MED_EE
+,T2_MED_SP
+,T2_MED_DEP
+,T2_MED_FAM
+,T2_DENT_EE
+,T2_DENT_SP
+,T2_DENT_DEP
+,T2_DENT_FAM
+,T2_VIS_EE
+,T2_VIS_SP
+,T2_VIS_DEP
+,T2_VIS_FAM
+,T2_LIMIT_PLAN_10
+,T2_LIMIT_PLAN_15
+,T2_LIMIT_MED_EE
+,T2_LIMIT_MED_SP
+,T2_LIMIT_MED_DEP
+,T2_LIMIT_MED_FAM
+,T2_ER_HSA_LVL
+,T2_ER_HSA_FRT_EE
+,T2_ER_HSA_FRT_FAM
+,T2_HSA_FRT_PAYOUT   
+,T2_ER_HSA_MON_EE
+,T2_ER_HSA_MON_FAM
+,T2_BAND_CD
+,T2_LIFE_BAND_CD
+,T2_DIS_BAND_CD
+,T2_LIMIT_PLAN_11
+,T2_LIMIT_DEN_EE
+,T2_LIMIT_DEN_SP
+,T2_LIMIT_DEN_DEP
+,T2_LIMIT_DEN_FAM
+,T2_LIMIT_PLAN_14
+,T2_LIMIT_VIS_EE
+,T2_LIMIT_VIS_SP
+,T2_LIMIT_VIS_DEP
+,T2_LIMIT_VIS_FAM
+,T2_BCBS_BAND_CD
+,T2_BCBSNC_BAND_CD
+,T2_KAISCA_BAND_CD
+,T2_KAISCO_BAND_CD
+,T2_BSOFCA_BAND_CD
+,T2_AETNA_BAND_CD
+,T2_TUFTS_BAND_CD
+,T2_UHC_BAND_CD
+,T2_BCOFID_BAND_CD
+,T2_BCBSMN_BAND_CD
+,T2_KAIMIDA_BAND_CD
+,T2_KAISHI_BAND_CD
+,T2_AET_HMO_BAND_CD
+,T2_AET_PPO_BAND_CD
+,T2_EMP_NY_BAND_CD )
+select 
+:company
+,:pfClient
+,:effdt
+,optn2.BENEFIT_PROGRAM
+,optn2.eff_status
+,optn2.t2_funding_optn
+,optn2.t2_ee_pct
+,optn2.t2_dep_pct
+,optn2.T2_EE_PCT_D
+,optn2.T2_DEP_PCT_D
+,optn2.T2_EE_PCT_V
+,optn2.T2_DEP_PCT_V
+,optn2.t2_rate_update
+,'N'
+,optn2.t2_funding_chg
+,optn2.T2_BENSUPP_EE
+,optn2.T2_BENSUPP_SP
+,optn2.T2_BENSUPP_DEP
+,optn2.T2_BENSUPP_FAM
+,optn2.T2_BENSUPP_ALL
+,optn2.T2_BENSUPP_NB
+,optn2.T2_LIFE_PLAN
+,optn2.T2_LTD_PLAN
+,optn2.T2_STD_PLAN
+,optn2.T2_FORFEIT_EXC_CR
+,optn2.T2_SPONS_MDV
+,optn2.T2_MED_EE
+,optn2.T2_MED_SP
+,optn2.T2_MED_DEP
+,optn2.T2_MED_FAM
+,optn2.T2_DENT_EE
+,optn2.T2_DENT_SP
+,optn2.T2_DENT_DEP
+,optn2.T2_DENT_FAM
+,optn2.T2_VIS_EE
+,optn2.T2_VIS_SP
+,optn2.T2_VIS_DEP
+,optn2.T2_VIS_FAM
+,optn2.T2_LIMIT_PLAN_10
+,optn2.T2_LIMIT_PLAN_15
+,optn2.T2_LIMIT_MED_EE
+,optn2.T2_LIMIT_MED_SP
+,optn2.T2_LIMIT_MED_DEP
+,optn2.T2_LIMIT_MED_FAM
+,optn2.T2_ER_HSA_LVL
+,optn2.T2_ER_HSA_FRT_EE
+,optn2.T2_ER_HSA_FRT_FAM
+,optn2.T2_HSA_FRT_PAYOUT   
+,optn2.T2_ER_HSA_MON_EE
+,optn2.T2_ER_HSA_MON_FAM
+,optn2.T2_BAND_CD
+,optn2.T2_LIFE_BAND_CD
+,optn2.T2_DIS_BAND_CD
+,optn2.T2_LIMIT_PLAN_11
+,optn2.T2_LIMIT_DEN_EE
+,optn2.T2_LIMIT_DEN_SP
+,optn2.T2_LIMIT_DEN_DEP
+,optn2.T2_LIMIT_DEN_FAM
+,optn2.T2_LIMIT_PLAN_14
+,optn2.T2_LIMIT_VIS_EE
+,optn2.T2_LIMIT_VIS_SP
+,optn2.T2_LIMIT_VIS_DEP
+,optn2.T2_LIMIT_VIS_FAM
+,optn2.T2_BCBS_BAND_CD
+,optn2.T2_BCBSNC_BAND_CD 
+,optn2.T2_KAISCA_BAND_CD
+,optn2.T2_KAISCO_BAND_CD
+,optn2.T2_BSOFCA_BAND_CD
+,optn2.T2_AETNA_BAND_CD
+,optn2.T2_TUFTS_BAND_CD
+,optn2.T2_UHC_BAND_CD
+,optn2.T2_BCOFID_BAND_CD
+,optn2.T2_BCBSMN_BAND_CD
+,optn2.T2_KAIMIDA_BAND_CD
+,optn2.T2_KAISHI_BAND_CD
+,optn2.T2_AET_HMO_BAND_CD
+,optn2.T2_AET_PPO_BAND_CD
+,optn2.T2_EMP_NY_BAND_CD from ps_t2_client_optn2 optn2 where optn2.company   = :company and  optn2.pf_client = :pfClient
+and   optn2.eff_status = 'A'         
+and   optn2.t2_funding_optn <> ' '
+and   optn2.effdt     = (Select max(effdt) from ps_t2_client_optn2
+                         where company   = optn2.company
+                         and   pf_client = optn2.pf_client)
+     	]]>
+	</entry>
+
+
+	<entry key="insertClientOption2A">
+      <![CDATA[
+      insert into PS_T2_CLIENT_OPT2A
+(COMPANY
+,PF_CLIENT
+,EFFDT
+,BENEFIT_PROGRAM
+,T2_CUST_PROG_NAME
+,T2_BEN_PROG_GROUP
+,T2_CLASS_CODE
+,T2_GEOLOC_TBL_CD
+,T2_DEF_BEN_PROG
+,T2_WAITING_PERIOD
+,T2_EXCL_MED_PLAN)
+SELECT COMPANY
+,PF_CLIENT
+,:effdt
+,BENEFIT_PROGRAM
+,T2_CUST_PROG_NAME
+,T2_BEN_PROG_GROUP
+,T2_CLASS_CODE
+,T2_GEOLOC_TBL_CD
+,T2_DEF_BEN_PROG
+,T2_WAITING_PERIOD
+,T2_EXCL_MED_PLAN
+FROM  ps_t2_client_opt2a
+WHERE company         = :company
+and   pf_client       = :pfClient
+and   effdt           = :effdtFromOptn2
+and   benefit_program = :benefitProgram
+	]]>
+	</entry>
+
+	<entry key="findNewPlanBandcd">
+      <![CDATA[
+      select distinct
+bc3.t2_band_cd
+from PS_T2_CLIENT_OPTN3 bc3, ps_t2_coweb_bandng cb
+where bc3.pf_client = :pfClient
+and bc3.company = :company
+and bc3.effdt = :effdtFromOptn2
+and bc3.benefit_program =  :benefitProgram
+and cb.plan_type    = bc3.plan_type
+and cb.benefit_plan = bc3.benefit_plan
+and cb.company = :cloneCompany
+and cb.effdt = (select max(cb1.effdt) from ps_t2_coweb_bandng cb1
+                     where cb1.plan_type    = cb.plan_type
+                       and cb1.company      = cb.company
+                       and   cb1.effdt       <= :effdtFromOptn2)
+and cb.T2_PLAN_TYPE_LOC = :planTypeLoc
+      ]]>
+	</entry>
+
+	<entry key="findNewPlanBandcdForLifeDis">
+      <![CDATA[
+      select distinct
+bc3A.t2_band_cd
+from PS_T2_CLIENT_OPTN3 bc3A, ps_t2_coweb_bandng cbA
+where bc3A.pf_client = :pfClient
+and bc3A.company         = :company
+and bc3A.effdt           = :effdtFromOptn2
+and bc3A.benefit_program = :benefitProgram
+and bc3A.plan_type       = :planType
+and cbA.plan_type        = bc3A.plan_type
+and cbA.benefit_plan     = bc3A.benefit_plan
+and cbA.company          = :cloneCompany
+and cbA.effdt            = (select max(cb1A.effdt) from ps_t2_coweb_bandng cb1A
+                            where cb1A.plan_type    = cbA.plan_type
+                            and   cb1A.company      = cbA.company
+                            and   cb1A.effdt        <= :effdtFromOptn2)
+      ]]>
+	</entry>
+
+
+	<entry key="getNewPlans">
+      <![CDATA[
+      select DBMS_RANDOM.random as id, tcb.PLAN_TYPE, tcb.BENEFIT_PLAN, tcb.T2_PLAN_TYPE_LOC, tcb.T2_HEALTH_PL_TYPE
+from ps_t2_coweb_bandng tcb
+where tcb.EFFDT = (select max(tcb1.effdt) from ps_t2_coweb_bandng tcb1
+                    where tcb1.plan_type    = tcb.plan_type
+                      and tcb1.company      = tcb.company
+                      and tcb1.effdt       <= :qtrPlanYearStartDate)
+and tcb.company = :cloneCompany
+and NOT EXISTS (SELECT 'X' FROM PS_T2_CLIENT_OPTN3 B
+                   WHERE b.BENEFIT_PLAN = tcb.BENEFIT_PLAN
+                     AND b.PLAN_TYPE = tcb.PLAN_TYPE
+                     and B.EFFDT = :effdt
+                     AND B.COMPANY         = :company
+                     AND B.BENEFIT_PROGRAM = :benefitProgram
+                     AND B.PF_CLIENT = :pfClient)
+      ]]>
+	</entry>
+
+
+	<entry key="insertOptn3">
+      <![CDATA[
+      insert into PS_T2_CLIENT_OPTN3
+VALUES
+(:company
+,:pfClient
+,:effdt
+,:benefitProgram
+,:planType
+,:benefitPlan
+,:bandCode)
+        ]]>
+	</entry>
+
+
+	<entry key="getClientNAICSCode">
+      <![CDATA[
+      select DBMS_RANDOM.random as id,T2_LIFE_BAND_CD, T2_DIS_BAND_CD from (select * from ps_t2_naics_tbl pnt where naics = (select est1.naics from PS_ESTAB_TBL_USA est1
+where est1.estabid= :company and est1.effdt =  (select max(est2.effdt) from PS_ESTAB_TBL_USA est2
+where est2.estabid= :company)) order by pnt.effdt desc) where ROWNUM <= 1
+       ]]>
+	</entry>
+
+	<entry key="updClientOptn2LifeDisBandCd">
+      <![CDATA[
+      Update PS_T2_CLIENT_OPTN2 co2
+Set co2.t2_life_band_cd  = :lifeBandCode,
+    co2.t2_dis_band_cd   = :disBandCode
+where co2.pf_client   = :pfClient
+and  co2.company      = :company
+and  co2.effdt        = :effdt
+      ]]>
+	</entry>
+
+	<entry key="updateClientOption3LifeBandCode">
+      <![CDATA[
+      Update PS_T2_CLIENT_OPTN3 co3
+Set co3.t2_band_cd  = :lifeBandCode
+where co3.pf_client   = :pfClient
+and  co3.company      = :company
+and  co3.effdt        = :effdt
+and  co3.plan_type like '2%'
+      
+        ]]>
+	</entry>
+
+	<entry key="updateClientOption3DisBandCode">
+      <![CDATA[
+      Update PS_T2_CLIENT_OPTN3 co31
+Set co31.t2_band_cd  = :disBandCode
+where co31.pf_client   = :pfClient
+and  co31.company      = :company
+and  co31.effdt        = :effdt
+and  co31.plan_type like '3%'
+      
+        ]]>
+	</entry>
+	
+ 
+	<entry key="getNewLifeDisPlans">
+      <![CDATA[
+      select
+tcb2.PLAN_TYPE,
+tcb2.BENEFIT_PLAN,
+case when substr(tcb2.PLAN_TYPE,1,1) = '2' then :lifeBandCode else :disBandCode end as BAND_CODE
+from ps_t2_coweb_bandng tcb2
+where tcb2.EFFDT = (select max(tcb3.effdt) from ps_t2_coweb_bandng tcb3
+                    where tcb3.plan_type    = tcb2.plan_type
+                      and tcb3.company      = tcb2.company
+                      and tcb3.effdt       <= :qtrPlanYearStartDate) 
+and tcb2.company   = :cloneCompany
+and (tcb2.plan_type like '2%' or tcb2.plan_type like '3%')
+and NOT EXISTS (SELECT 'X' FROM PS_T2_CLIENT_OPTN3 B2
+                   WHERE b2.BENEFIT_PLAN = tcb2.BENEFIT_PLAN
+                     AND b2.PLAN_TYPE = tcb2.PLAN_TYPE
+                     and B2.EFFDT     = :effdt
+                     and B2.benefit_program in (:benefitProgram)
+                     AND B2.COMPANY   = :company
+                     AND B2.PF_CLIENT = :pfClient)
+                     
+         ]]>
+	</entry>
+
+	<entry key="getQuarterPlanYrStartDate">
+      <![CDATA[
+select DBMS_RANDOM.random as id,QES.T2_PLNYR_START_DT
+FROM PS_T2_QTR_OE_SETUP QES
+WHERE QES.EFFDT = (SELECT MAX(QES_ED.EFFDT) FROM PS_T2_QTR_OE_SETUP QES_ED
+                    WHERE QES_ED.EFFDT <= :cloneBenefitProgEffDate)
+AND QES.T2_OE_QUARTER = :quarter
+        ]]>
+	</entry>
+
+	<entry key="updateOPTN3BandCd">
+      <![CDATA[
+      UPDATE PS_T2_CLIENT_OPTN3
+   SET T2_BAND_CD = :newBandCode
+ WHERE COMPANY = :company
+   AND EFFDT = :effdt
+   AND BENEFIT_PLAN IN (
+       SELECT BAND.BENEFIT_PLAN 
+         FROM PS_T2_COWEB_BANDNG BAND
+        WHERE BAND.EFFDT = (
+              SELECT MAX(BAND1.EFFDT) 
+                FROM PS_T2_COWEB_BANDNG BAND1
+               WHERE BAND1.PLAN_TYPE = BAND.PLAN_TYPE
+                 AND BAND1.COMPANY = BAND.COMPANY
+                 AND BAND1.EFFDT <= :planYrStartDate )
+          AND BAND.COMPANY = :cloneCompany
+          AND BAND.T2_PLAN_TYPE_LOC = :bandLoc )
+      ]]>
+	</entry>
+
+	<entry key="updateOPTN3HMOPPOBandCode">
+      <![CDATA[
+      UPDATE PS_T2_CLIENT_OPTN3 OP3
+   SET OP3.T2_BAND_CD = (
+
+       SELECT /*+ INDEX( BND PS_T2_COWEB_BANDNG ) */
+         CASE BND.T2_HEALTH_PL_TYPE
+                 WHEN 'HMO'  THEN COALESCE( TRIM( :aetnaHMOBandCode ), :aetnaBandCode )
+                 WHEN 'PPO'  THEN COALESCE( TRIM( :aetnaPPOBandCode ), :aetnaBandCode )
+                 ELSE   :aetnaBandCode
+              END   AS HMO_PPO_FLAG
+
+         FROM PS_BENEF_PLAN_TBL BP
+            , PS_T2_COWEB_BANDNG BND
+            , PS_T2_CLIENT_OPTN2 OP2
+        WHERE BP.PLAN_TYPE = OP3.PLAN_TYPE
+          AND BP.BENEFIT_PLAN = OP3.BENEFIT_PLAN
+          AND BP.EFFDT = (
+              SELECT MAX(EFFDT)
+                FROM PS_BENEF_PLAN_TBL B1
+               WHERE B1.PLAN_TYPE = BP.PLAN_TYPE
+                 AND B1.BENEFIT_PLAN = BP.BENEFIT_PLAN
+                 AND B1.EFFDT <= :effdt )
+          AND BP.VENDOR_ID LIKE 'AET%'
+          AND BND.COMPANY = :cloneCompany
+          AND BND.EFFDT = (
+              SELECT MAX(EFFDT)
+                FROM PS_T2_COWEB_BANDNG BD1
+               WHERE BD1.COMPANY = BND.COMPANY
+                 AND BD1.EFFDT <= :effdt )
+          AND BND.PLAN_TYPE = OP3.PLAN_TYPE
+          AND BND.BENEFIT_PLAN = OP3.BENEFIT_PLAN
+          AND OP2.COMPANY = OP3.COMPANY
+          AND OP2.PF_CLIENT = OP3.PF_CLIENT
+          AND OP2.EFFDT = OP3.EFFDT
+          AND OP2.BENEFIT_PROGRAM = OP3.BENEFIT_PROGRAM
+)
+
+ WHERE OP3.COMPANY = :company
+   AND OP3.PF_CLIENT = :pfClient
+   AND OP3.EFFDT = (
+       SELECT MAX(EFFDT)
+         FROM PS_T2_CL_OPTN_EFDT EF
+        WHERE EF.COMPANY = OP3.COMPANY
+          AND EF.PF_CLIENT = OP3.PF_CLIENT
+          AND EF.EFFDT <= :effdt )
+   AND EXISTS (
+       SELECT /*+ INDEX( BND PS_T2_COWEB_BANDNG ) */
+              'X'
+         FROM PS_BENEF_PLAN_TBL BP
+            , PS_T2_COWEB_BANDNG BND
+            , PS_T2_CLIENT_OPTN2 OP2
+        WHERE BP.PLAN_TYPE = OP3.PLAN_TYPE
+          AND BP.BENEFIT_PLAN = OP3.BENEFIT_PLAN
+          AND BP.EFFDT = (
+              SELECT MAX(EFFDT)
+                FROM PS_BENEF_PLAN_TBL B1
+               WHERE B1.PLAN_TYPE = BP.PLAN_TYPE
+                 AND B1.BENEFIT_PLAN = BP.BENEFIT_PLAN
+                 AND B1.EFFDT <= :effdt )
+          AND BP.VENDOR_ID LIKE 'AET%'
+          AND BND.COMPANY = :cloneCompany
+          AND BND.EFFDT = (
+              SELECT MAX(EFFDT)
+                FROM PS_T2_COWEB_BANDNG BD1
+               WHERE BD1.COMPANY = BND.COMPANY
+                 AND BD1.EFFDT <= :effdt )
+          AND BND.PLAN_TYPE = OP3.PLAN_TYPE
+          AND BND.BENEFIT_PLAN = OP3.BENEFIT_PLAN
+          AND TRIM( BND.T2_PLAN_TYPE_LOC ) IS NOT NULL
+          AND OP2.COMPANY = OP3.COMPANY
+          AND OP2.PF_CLIENT = OP3.PF_CLIENT
+          AND OP2.EFFDT = OP3.EFFDT
+          AND OP2.BENEFIT_PROGRAM = OP3.BENEFIT_PROGRAM )
+      ]]>
+	</entry>
+
+	<entry key="updateBandCdforBCBS2">
+      <![CDATA[
+      Update PS_T2_CLIENT_OPTN3
+Set t2_band_cd     = :bcbsBandCode
+where company      = :company
+and   effdt        = :effdt
+and   benefit_plan in (select band2.benefit_plan from ps_t2_coweb_bandng band2
+                        where band2.effdt = (select max(band21.effdt) from ps_t2_coweb_bandng band21
+                                              where band21.plan_type    = band2.plan_type
+                                                and band21.company      = band2.company
+                                                and   band21.effdt      <= :planYrStartDate)
+                           and band2.company = :cloneCompany
+                           and band2.T2_PLAN_TYPE_LOC = 'A')
+       ]]>
+	</entry>
+
+
+	<entry key="updateHealthBandCd2">
+      <![CDATA[
+      Update PS_T2_CLIENT_OPTN2
+Set t2_band_cd     = :otherBandCode
+   ,t2_bcbs_band_cd = :bcbsBandCode
+   ,T2_KAISCA_BAND_CD = :kaisCABandCode
+   ,T2_KAISCO_BAND_CD = :kaisCOBandCode
+   ,T2_BSOFCA_BAND_CD = :bsoCABandCode
+   ,T2_AETNA_BAND_CD  = :aetnaBandCode
+   ,T2_TUFTS_BAND_CD  = :tuftsBandCode
+   ,T2_UHC_BAND_CD    = :uhcBandCode            
+   ,T2_BCBSNC_BAND_CD = :bcbsNCBandCode
+   ,T2_BCOFID_BAND_CD = :bcoIDBandCode
+   ,T2_BCBSMN_BAND_CD  = :bcbsMNBandCode
+   ,T2_KAIMIDA_BAND_CD = :kaisMidAtlBandCode
+   ,T2_KAISHI_BAND_CD  = :kaisHIBandCode
+   ,T2_AET_HMO_BAND_CD = :aetnaHMOBandCode
+   ,T2_AET_PPO_BAND_CD = :aetnaPPOBandCode
+   ,T2_EMP_NY_BAND_CD =  :empireNYBandCode
+where pf_client = :pfClient and  company      = :company
+and   effdt        = :effdt      
+         ]]>
+	</entry>
+
+	<entry key="updateRateupdFundChgFlags">
+      <![CDATA[
+      Update PS_T2_CLIENT_OPTN2 co3
+Set co3.T2_Rate_Update  = 'Y',
+    co3.T2_Funding_chg  = 'Y'
+where co3.pf_client   = :pfClient
+and  co3.company      = :company
+and  co3.effdt        = :effdt
+and  co3.pf_client in (select b.pf_client from PS_T2_CLIENTOPTION b WHERE b.t2_oe_quarter not in ('AL','H1') and b.pf_client = b.pf_client and b.company = co3.company)
+AND CO3.COMPANY NOT IN ( SELECT COMPANY FROM BIS_EXCLUDE_COMPANIES@HPDB_HRDB )
+       ]]>
+	</entry>
+	<entry key="checkOptn3">
+      <![CDATA[
+	select count(pf_client) from PS_T2_CLIENT_OPTN3
+where
+company = :company and
+pf_client = :pfClient and 
+effdt = :effdt and 
+benefit_program = :benefitProgram
+and plan_type = :planType
+and benefit_plan = :benefitPlan
+and t2_band_cd = :bandCode;
+
+  ]]>
+	</entry>
+
+
+
+
+<entry key = "newUpdateOptn3">
+<![CDATA[
+
+UPDATE PS_T2_CLIENT_OPTN3 O3
+   SET O3.T2_BAND_CD = COALESCE ( (
+SELECT CASE
+       WHEN O3.PLAN_TYPE IN ('10','15') THEN
+            COALESCE(
+            CASE BND.T2_PLAN_TYPE_LOC
+               WHEN '4'  THEN  O2.T2_KAISCA_BAND_CD
+               WHEN '5'  THEN  O2.T2_KAISCO_BAND_CD
+               WHEN '6'  THEN  O2.T2_BSOFCA_BAND_CD
+               WHEN '7'  THEN
+                  CASE BND.T2_HEALTH_PL_TYPE
+                     WHEN  'HMO'  THEN COALESCE( TRIM( O2.T2_AET_HMO_BAND_CD ), O2.T2_AETNA_BAND_CD )
+                     WHEN  'PPO'  THEN COALESCE( TRIM( O2.T2_AET_PPO_BAND_CD ), O2.T2_AETNA_BAND_CD )
+                     ELSE  O2.T2_AETNA_BAND_CD
+                  END
+               WHEN '8'  THEN  O2.T2_TUFTS_BAND_CD
+               WHEN '9'  THEN  O2.T2_BAND_CD
+               WHEN 'A'  THEN  O2.T2_BCBS_BAND_CD
+               WHEN 'B'  THEN  O2.T2_BCBSNC_BAND_CD
+               WHEN 'C'  THEN  O2.T2_UHC_BAND_CD
+               WHEN 'D'  THEN  O2.T2_BCOFID_BAND_CD
+               WHEN 'E'  THEN  O2.T2_KAIMIDA_BAND_CD
+               WHEN 'F'  THEN  O2.T2_BCBSMN_BAND_CD
+               WHEN 'G'  THEN  O2.T2_KAISHI_BAND_CD
+               WHEN 'H'  THEN  O2.T2_AET_HMO_BAND_CD
+               WHEN 'I'  THEN  O2.T2_AET_PPO_BAND_CD
+               WHEN 'J'  THEN  O2.T2_EMP_NY_BAND_CD
+            END
+            , ' ' )
+       WHEN O3.PLAN_TYPE LIKE '2%'  THEN  O2.T2_LIFE_BAND_CD
+       WHEN O3.PLAN_TYPE LIKE '3%'  THEN  O2.T2_DIS_BAND_CD
+       END    AS DERIVED_BAND_CD
+FROM PS_T2_COWEB_BANDNG BND
+   , PS_T2_CLIENT_OPTN2 O2
+WHERE BND.COMPANY = :cloneCompany
+AND BND.EFFDT = (
+    SELECT MAX(EFFDT)
+      FROM PS_T2_COWEB_BANDNG B1
+     WHERE B1.COMPANY = BND.COMPANY
+       AND B1.EFFDT <= :planYrStartDate )
+AND BND.PLAN_TYPE = O3.PLAN_TYPE
+AND BND.BENEFIT_PLAN = O3.BENEFIT_PLAN
+AND O2.COMPANY = O3.COMPANY
+AND O2.PF_CLIENT = O3.PF_CLIENT
+AND O2.EFFDT = O3.EFFDT
+AND O2.BENEFIT_PROGRAM = O3.BENEFIT_PROGRAM
+), ' ' )
+WHERE O3.COMPANY = :company
+AND O3.EFFDT =  :effdtStr
+]]>
+
+</entry>
+
+<entry key = "newInsertOptn3">
+<![CDATA[
+INSERT INTO PS_T2_CLIENT_OPTN3 (
+COMPANY
+,PF_CLIENT
+,EFFDT
+,BENEFIT_PROGRAM
+,PLAN_TYPE
+,BENEFIT_PLAN
+,T2_BAND_CD
+)
+( SELECT CO.COMPANY
+,CO.PF_CLIENT
+,CO.EFFDT
+,CO.BENEFIT_PROGRAM
+,B.PLAN_TYPE
+,B.BENEFIT_PLAN
+,CASE
+WHEN B.PLAN_TYPE IN (
+'10'
+,'15'
+) THEN COALESCE(
+CASE B.T2_PLAN_TYPE_LOC
+WHEN '4' THEN CO.T2_KAISCA_BAND_CD
+WHEN '5' THEN CO.T2_KAISCO_BAND_CD
+WHEN '6' THEN CO.T2_BSOFCA_BAND_CD
+WHEN '7' THEN
+CASE B.T2_HEALTH_PL_TYPE
+WHEN 'HMO' THEN COALESCE( TRIM( CO.T2_AET_HMO_BAND_CD ),CO.T2_AETNA_BAND_CD )
+WHEN 'PPO' THEN COALESCE( TRIM( CO.T2_AET_PPO_BAND_CD ),CO.T2_AETNA_BAND_CD )
+ELSE CO.T2_AETNA_BAND_CD
+END
+WHEN '8' THEN CO.T2_TUFTS_BAND_CD
+WHEN '9' THEN CO.T2_BAND_CD
+WHEN 'A' THEN CO.T2_BCBS_BAND_CD
+WHEN 'B' THEN CO.T2_BCBSNC_BAND_CD
+WHEN 'C' THEN CO.T2_UHC_BAND_CD
+WHEN 'D' THEN CO.T2_BCOFID_BAND_CD
+WHEN 'E' THEN CO.T2_KAIMIDA_BAND_CD
+WHEN 'F' THEN CO.T2_BCBSMN_BAND_CD
+WHEN 'G' THEN CO.T2_KAISHI_BAND_CD
+WHEN 'H' THEN CO.T2_AET_HMO_BAND_CD
+WHEN 'I' THEN CO.T2_AET_PPO_BAND_CD
+WHEN 'J' THEN CO.T2_EMP_NY_BAND_CD
+END
+,' ' )
+WHEN B.PLAN_TYPE LIKE '2%' THEN CO.T2_LIFE_BAND_CD
+WHEN B.PLAN_TYPE LIKE '3%' THEN CO.T2_DIS_BAND_CD
+END
+AS DERIVED_BAND_CD
+FROM PS_T2_CLIENT_OPTN2 CO
+,PS_T2_COWEB_BANDNG B
+,PS_T2_CL_OPTN_EFDT E
+WHERE E.PF_CLIENT =:pfClient
+AND E.EFFDT =:effdt
+AND CO.PF_CLIENT = E.PF_CLIENT
+AND CO.COMPANY = E.COMPANY
+AND CO.EFFDT = E.EFFDT
+AND CO.EFF_STATUS='A'
+AND B.COMPANY =:cloneCompany
+AND B.EFFDT = (
+SELECT MAX( EFFDT )
+FROM PS_T2_COWEB_BANDNG B1
+WHERE B1.COMPANY = B.COMPANY
+AND B1.EFFDT <=:planYrStartDate
+)
+AND ( B.PLAN_TYPE
+,B.BENEFIT_PLAN ) NOT IN (
+SELECT MS.PLAN_TYPE
+,MS.BENEFIT_PLAN
+FROM PS_T2_MED_SITUS_HD SH
+,PS_T2_CLIENTOPTION C
+,PS_T2_MED_SITUS MS
+WHERE C.PF_CLIENT = E.PF_CLIENT
+AND C.COMPANY = E.COMPANY
+AND SH.EFFDT = (
+SELECT MAX( EFFDT )
+FROM PS_T2_MED_SITUS_HD SH1
+WHERE SH1.T2_REGION = SH.T2_REGION
+AND SH1.EFFDT <=:planYrStartDate
+)
+AND SH.T2_REGION <> (
+CASE
+WHEN C.T2_PRODUCT_LINE = 'DFTX' THEN 'TX'
+ELSE 'FL'
+END
+)
+AND SH.T2_REGION = MS.T2_REGION
+AND SH.EFFDT = MS.EFFDT
+)
+)
+]]>
+
+</entry>
+
+
+</properties>
